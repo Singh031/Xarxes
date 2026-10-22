@@ -68,12 +68,46 @@ int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 /*  l'identificador del socket creat si tot va bé;                        */
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
-{
+{   
+    // CrearSocket
     int sesc;
+    int i;
+    int errno_save;
+
     if((sesc = socket(AF_INET, SOCK_STREAM,0))== -1){
         return -1;
     }
-	
+    
+    // Fer Bind
+    struct sockaddr_in adrloc;
+    {
+        adrloc.sin_family = AF_INET;
+        adrloc.sin_port = htons(portTCPloc);
+        adrloc.sin_addr.s_addr = inet_addr(IPloc);
+
+        for(i = 0; i < 8; i++){
+            adrloc.sin_zero[i] = '\0';
+        }
+
+        if((bind(sesc, (struct sockaddr*)&adrloc, sizeof(adrloc))) == -1){
+            errno_save = errno;
+            close(sesc);
+            errno = errno_save;
+
+            return -1;
+        }
+    };
+
+    // Preparar per escoltar
+    if((listen(sesc, 3)) == -1){
+        errno_save = errno;
+        close(sesc);
+        errno = errno_save;
+
+        return -1;
+    }
+
+    return sesc;
 }
 
 /* El socket TCP “client” d’identificador “Sck” es connecta al socket     */
