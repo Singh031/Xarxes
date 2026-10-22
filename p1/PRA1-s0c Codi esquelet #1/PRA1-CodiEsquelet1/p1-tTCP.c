@@ -80,23 +80,22 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
     
     // Fer Bind
     struct sockaddr_in adrloc;
-    {
-        adrloc.sin_family = AF_INET;
-        adrloc.sin_port = htons(portTCPloc);
-        adrloc.sin_addr.s_addr = inet_addr(IPloc);
 
-        for(i = 0; i < 8; i++){
-            adrloc.sin_zero[i] = '\0';
-        }
+    adrloc.sin_family = AF_INET;
+    adrloc.sin_port = htons(portTCPloc);
+    adrloc.sin_addr.s_addr = inet_addr(IPloc);
 
-        if((bind(sesc, (struct sockaddr*)&adrloc, sizeof(adrloc))) == -1){
-            errno_save = errno;
-            close(sesc);
-            errno = errno_save;
+    for(i = 0; i < 8; i++){
+        adrloc.sin_zero[i] = '\0';
+    }
 
-            return -1;
-        }
-    };
+    if((bind(sesc, (struct sockaddr*)&adrloc, sizeof(adrloc))) == -1){
+        errno_save = errno;
+        close(sesc);
+        errno = errno_save;
+
+        return -1;
+    }
 
     // Preparar per escoltar
     if((listen(sesc, 3)) == -1){
@@ -146,7 +145,19 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 /* -1 si hi ha error.                                                     */
 int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 {
-	
+    int scon;
+
+    struct sockaddr_in adrrem;
+    socklen_t long_adrrem = sizeof(adrrem);
+
+    if((scon = accept(Sck,(struct sockaddr*)&adrrem, &long_adrrem)) == -1){
+        return -1;
+    }
+
+    *portTCPrem = ntohs(adrrem.sin_port);
+    strcpy(IPrem, inet_ntoa(adrrem.sin_addr));
+
+    return scon;
 }
 
 /* Envia a través del socket TCP “connectat” d’identificador “Sck” la     */
