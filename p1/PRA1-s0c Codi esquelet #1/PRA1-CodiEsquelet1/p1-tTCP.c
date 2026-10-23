@@ -53,7 +53,26 @@
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 {
-	
+	int scon;
+    int i;
+
+    if((scon = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+        return -1;
+    }
+
+    struct sockaddr_in adrloc;
+
+    adrloc.sin_family = AF_INET;
+    adrloc.sin_port = htons(portTCPloc);
+    adrloc.sin_addr.s_addr = inet_addr(IPloc);
+
+    for(i = 0; i < 8; i++){
+        adrloc.sin_zero[i] = '\0';
+    }
+
+    if((bind(scon, (struct sockaddr*)&adrloc, sizeof(adrloc))) == -1){
+        return -1;
+    }
 }
 
 /* Crea un socket TCP “servidor” (o en estat d’escolta – listen –) a      */
@@ -90,19 +109,11 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
     }
 
     if((bind(sesc, (struct sockaddr*)&adrloc, sizeof(adrloc))) == -1){
-        errno_save = errno;
-        close(sesc);
-        errno = errno_save;
-
         return -1;
     }
 
     // Preparar per escoltar
     if((listen(sesc, 3)) == -1){
-        errno_save = errno;
-        close(sesc);
-        errno = errno_save;
-
         return -1;
     }
 
@@ -124,7 +135,20 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 {
-	
+	struct sockaddr_in adrrem;
+    int i;
+
+    adrrem.sin_family = AF_INET;
+    adrrem.sin_port = htons(portTCPrem);
+    adrrem.sin_addr.s_addr = inet_addr(IPrem);
+
+    for(i = 0; i < 8; i++){
+        adrrem.sin_zero[i] = '\0';
+    }
+
+    if(connect(Sck, (struct sockaddr*)&adrrem, sizeof(adrrem)) == -1){
+        return -1;
+    }
 }
 
 /* El socket TCP “servidor” d’identificador “Sck” accepta fer una         */
