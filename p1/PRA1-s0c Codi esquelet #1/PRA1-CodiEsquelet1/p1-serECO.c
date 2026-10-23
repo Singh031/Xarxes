@@ -13,6 +13,7 @@
 /* Inclusió de llibreries, p.e. #include <stdio.h> o #include "meu.h"     */
 
 #include "p1-tTCP.h"
+#include <stdio.h>
 
 /* Definició de constants, p.e.,                                          */
 
@@ -23,12 +24,27 @@
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
 
 /* int FuncioInterna(arg1, arg2...);                                      */
+int obtPort();
 
 int main(int argc,char *argv[])
 {
  /* Declaració de variables, p.e., int n;                                 */
+ int sesc, scon, i;
+ int bytes_llegits, bytes_escrits;
+ char buffer[200];
+ char iploc[16];
+ int portloc;
+ char iprem[16];
+ int portrem;
 
  /* Expressions, estructures de control, crides a funcions, etc.          */
+ portloc = obtPort();
+
+ sesc = TCP_CreaSockServidor(iploc, portloc);
+ comprovarError(sesc);
+
+ scon = TCP_AcceptaConnexio(sesc, iprem, &portrem);
+ comprovarError(scon);
 
 }
 
@@ -41,3 +57,20 @@ int main(int argc,char *argv[])
 {
 	
 } */
+
+int obtPort(){
+    int port;
+
+    printf("A quin port et voldries conectar? :)");
+    scanf(port);
+
+    return port;
+}
+
+void comprovarError(int error){
+    int codiError;
+    if(error == -1){
+        T_ObteTextRes(&codiError);
+        exit();
+    }
+}
