@@ -71,7 +71,7 @@ int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
         adrloc.sin_zero[i] = '\0';
     }
 
-    if((bind(scon, (struct sockaddr*)&adrloc, &long_adrloc)) == -1){
+    if((bind(scon, (struct sockaddr*)&adrloc, long_adrloc)) == -1){
         return -1;
     }
 
@@ -111,7 +111,7 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
         adrloc.sin_zero[i] = '\0';
     }
 
-    if((bind(sesc, (struct sockaddr*)&adrloc, &long_adrloc)) == -1){
+    if((bind(sesc, (struct sockaddr*)&adrloc, long_adrloc)) == -1){
         return -1;
     }
 
@@ -150,7 +150,7 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
         adrrem.sin_zero[i] = '\0';
     }
 
-    if(connect(Sck, (struct sockaddr*)&adrrem, &long_adrrem) == -1){
+    if(connect(Sck, (struct sockaddr*)&adrrem, long_adrrem) == -1){
         return -1;
     }
 
@@ -245,8 +245,12 @@ int TCP_Rep(int Sck, char *SeqBytes, int LongSeqBytes)
 /*  0 si tot va bé;                                                       */
 /* -1 si hi ha error.                                                     */
 int TCP_TancaSock(int Sck)
-{
-    close(Sck);
+{    
+    if(close(Sck) == -1){
+        return -1;
+    }
+
+    return 0;
 }
 
 /* Donat el socket TCP d’identificador “Sck”, troba l’adreça d’aquest     */
@@ -264,12 +268,12 @@ int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
     struct sockaddr_in adrloc;
     socklen_t long_adrloc = sizeof(adrloc);
 
-	if(getsockname(Sck, (struct sockaddr*)&adrloc, long_adrloc) == -1){
+	if(getsockname(Sck, (struct sockaddr*)&adrloc, &long_adrloc) == -1){
         return -1;
     }
 
     *portTCPloc = ntohs(adrloc.sin_port);
-    stpcpy(IPloc, inet_ntoa(adrloc.sin_addr));
+    strcpy(IPloc, inet_ntoa(adrloc.sin_addr));
 
     return 0;
 }
@@ -293,8 +297,8 @@ int TCP_TrobaAdrSockRem(int Sck, char *IPrem, int *portTCPrem)
         return -1;
     }
 
-    *portTCPrem = adrrem.sin_port;
-    stpcpy(IPrem, inet_ntoa(adrrem.sin_addr));
+    *portTCPrem = ntohs(adrrem.sin_port);
+    strcpy(IPrem, inet_ntoa(adrrem.sin_addr));
 
     return 0;
 }
