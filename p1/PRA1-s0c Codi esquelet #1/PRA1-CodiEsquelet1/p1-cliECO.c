@@ -29,6 +29,7 @@
 /* int FuncioInterna(arg1, arg2...);                                      */
 void DemanaIpServidor(char *iprem);
 int DemanaPortServidor(void);
+void comprovarError(int res);
 
 int main(int argc,char *argv[])
 {
@@ -43,11 +44,8 @@ int main(int argc,char *argv[])
  DemanaIpServidor(iprem);
  portrem = DemanaPortServidor();
  sck = TCP_CreaSockClient("0.0.0.0", 0);
- if (sck == -1)
- {
-    printf("Error al crear el socket del client: %s\n", T_ObteTextRes(&codiError));
-    exit(-1);
- }
+ comprovarError(sck);
+ comprovarError(TCP_DemanaConnexio(sck, iprem, portrem));
 }
 
 /* Definició de funcions INTERNES, és a dir, d'aquelles que es faran      */
@@ -68,6 +66,17 @@ int DemanaPortServidor()
     return port;
 }
 
+void comprovarError(int res){
+    int codiError;
+    char *error;
+    if(res == -1){
+        error = T_ObteTextRes(&codiError);
+        printf("Hem obtingut el seguent error: %s \n", error);
+        printf("Amb el seguent codi: %d \n", codiError);
+
+        exit(1);
+    }
+}
 /* Descripció de la funció, dels arguments, valors de retorn, etc.        */
 /*int FuncioInterna(arg1, arg2...)
 {
