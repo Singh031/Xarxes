@@ -58,6 +58,20 @@ int main(int argc,char *argv[])
         comprovarError(TCP_TrobaAdrSockLoc(scon, iplocCon, &portlocCon));
         printf("Socket local: %s : %d\n", iplocCon, portlocCon);
         printf("Socket client: %s : %d\n", iprem, portrem);
+        while(1){
+            bytes_llegits = TCP_Rep(scon, buffer, MAX_BUFFER-1);
+            if (!bytes_llegits)
+            {
+                printf("La connexio amb el client s'ha tancat\n");
+                break;
+            }
+            comprovarError(bytes_llegits);
+            buffer[bytes_llegits] = '\0';
+            printf("%s", buffer);
+            printf("Nombre de bytes rebuts: %d\n", bytes_llegits);
+            comprovarError(TCP_Envia(scon, buffer, bytes_llegits));
+        }
+        comprovarError(TCP_TancaSock(scon));
     }
     return 0;
 }
