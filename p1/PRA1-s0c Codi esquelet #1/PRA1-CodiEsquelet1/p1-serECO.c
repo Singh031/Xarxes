@@ -21,6 +21,9 @@
 
 /* #define XYZ       1500                                                 */
 
+#define MAX_BUFFER 200
+#define MAX_IP 16
+
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
@@ -34,13 +37,13 @@ void comprovarError(int res);
 int main(int argc,char *argv[])
 {
  /* Declaració de variables, p.e., int n;                                 */
-    int sesc, scon, i;
+    int sesc, scon;
     int bytes_llegits, bytes_escrits;
-    char buffer[200];
-    char iploc[16];
-    int portloc;
-    char iprem[16];
-    int portrem;
+    char buffer[MAX_BUFFER];
+    char iploc[MAX_IP], iprem[MAX_IP];
+    int portloc, portrem;
+    char iplocCon[MAX_IP];
+    int portlocCon;
 
     strcpy(iploc, "0.0.0.0"); // Escolto a local i remot
 
@@ -49,10 +52,13 @@ int main(int argc,char *argv[])
 
     sesc = TCP_CreaSockServidor(iploc, portloc);
     comprovarError(sesc);
-
-    scon = TCP_AcceptaConnexio(sesc, iprem, &portrem);
-    comprovarError(scon);
-
+    while(1){
+        scon = TCP_AcceptaConnexio(sesc, iprem, &portrem);
+        comprovarError(scon);
+        comprovarError(TCP_TrobaAdrSockLoc(scon, iplocCon, &portlocCon));
+        printf("Socket local: %s : %d\n", iplocCon, portlocCon);
+        printf("Socket client: %s : %d\n", iprem, portrem);
+    }
     return 0;
 }
 
