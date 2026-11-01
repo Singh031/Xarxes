@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
 {
  /* Declaració de variables, p.e., int n;                                 */
     int sesc, scon;
-    int bytes_llegits, bytes_escrits;
+    int bytes_llegits;
     char buffer[MAX_BUFFER];
     char iploc[MAX_IP], iprem[MAX_IP];
     int portloc, portrem;
@@ -89,7 +89,7 @@ int main(int argc,char *argv[])
 int obtPort(void){
     int port;
 
-    printf("A quin port vols escotar? :) \n");
+    printf("A quin port vols escoltar? :) \n");
     scanf("%d", &port);
 
     return port;
