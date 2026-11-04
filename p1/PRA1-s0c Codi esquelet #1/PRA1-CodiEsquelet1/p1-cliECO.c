@@ -70,7 +70,7 @@ int main(int argc,char *argv[])
         buffer[bytes_llegits] = '\0';
         printf("%s", buffer);
     }
-    comprovarError(TCP_TancaSock(sck, "TCP_TancaSock"));
+    comprovarError(TCP_TancaSock(sck), "TCP_TancaSock");
     printf("Vols continuar o acabar (C/F):");
     if (scanf(" %c", &resposta) != 1) break;
     if (resposta == 'f' || resposta == 'F') break;
