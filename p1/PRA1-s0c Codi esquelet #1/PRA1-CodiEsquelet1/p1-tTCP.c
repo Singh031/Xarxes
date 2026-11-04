@@ -72,9 +72,6 @@ int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
     }
 
     if((bind(scon, (struct sockaddr*)&adrloc, long_adrloc)) == -1){
-        int errBind = errno;
-        close(scon);
-        errno = errBind;
         return -1;
     }
 
@@ -115,17 +112,11 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
     }
 
     if((bind(sesc, (struct sockaddr*)&adrloc, long_adrloc)) == -1){
-        int errBind = errno;
-        close(sesc);
-        errno = errBind;
         return -1;
     }
 
     // Preparar per escoltar
     if((listen(sesc, 3)) == -1){
-        int errListen = errno;
-        close(sesc);
-        errno = errListen;
         return -1;
     }
 
