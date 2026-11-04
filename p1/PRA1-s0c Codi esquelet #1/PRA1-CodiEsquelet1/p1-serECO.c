@@ -65,7 +65,7 @@ int main(int argc,char *argv[])
     portloc = obtPort();
 
     sesc = TCP_CreaSockServidor(iploc, portloc);
-    comprovarError(sesc);
+    comprovarError(sesc, "TCP_CreaSockServidor");
     while(1){
         scon = TCP_AcceptaConnexio(sesc, iprem, &portrem);
         comprovarError(scon, "TCP_AcceptaConnexio");
