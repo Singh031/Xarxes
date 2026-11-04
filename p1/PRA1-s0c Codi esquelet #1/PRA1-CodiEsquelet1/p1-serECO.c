@@ -30,14 +30,16 @@
 
 /* int FuncioInterna(arg1, arg2...);                                      */
 
-int obtPort(void);
+int sesc = -1;
+int scon = -1;
 
-void comprovarError(int res);
+int obtPort(void);
+void comprovarError(int res, const char *crida);
+void tancaSuaument(int senyal);
 
 int main(int argc,char *argv[])
 {
  /* Declaració de variables, p.e., int n;                                 */
-    int sesc, scon;
     int bytes_llegits;
     char buffer[MAX_BUFFER];
     char iploc[MAX_IP], iprem[MAX_IP];
@@ -46,32 +48,45 @@ int main(int argc,char *argv[])
     int portlocCon;
 
     strcpy(iploc, "0.0.0.0"); // Escolto a local i remot
+    if (argc > 1) {
+        if (strlen(argv[1]) >= MAX_IP) {
+            printf("L'@IP '%s' es massa llarga\n", argv[1]);
+            exit(1);
+        }
+        strcpy(iploc, argv[1]);
+    }
 
  /* Expressions, estructures de control, crides a funcions, etc.          */
+    
+    signal(SIGINT, tancaSuaument);
+
     portloc = obtPort();
 
     sesc = TCP_CreaSockServidor(iploc, portloc);
     comprovarError(sesc);
     while(1){
         scon = TCP_AcceptaConnexio(sesc, iprem, &portrem);
-        comprovarError(scon);
-        comprovarError(TCP_TrobaAdrSockLoc(scon, iplocCon, &portlocCon));
-        printf("Socket local: %s : %d\n", iplocCon, portlocCon);
+        comprovarError(scon, "TCP_AcceptaConnexio");
+        comprovarError(TCP_TrobaAdrSockLoc(scon, iplocCon, &portlocCon), "TCP_TrobaAdrSockLoc(scon)");
+        comprovarError(TCP_TrobaAdrSockLoc(sesc, iplocEsc, &portlocEsc), "TCP_TrobaAdrSockLoc(sesc)");
+        printf("Socket local (scon): %s : %d\n", iplocCon, portlocCon);
+        printf("Socket d'escolta (sesc): %s : %d\n", iplocEsc, portlocEsc);
         printf("Socket client: %s : %d\n", iprem, portrem);
         while(1){
             bytes_llegits = TCP_Rep(scon, buffer, MAX_BUFFER-1);
-            if (!bytes_llegits)
+            if (bytes_llegits == 0)
             {
                 printf("La connexio amb el client s'ha tancat\n");
                 break;
             }
-            comprovarError(bytes_llegits);
+            comprovarError(bytes_llegits, "TCP_Rep");
             buffer[bytes_llegits] = '\0';
             printf("%s", buffer);
             printf("Nombre de bytes rebuts: %d\n", bytes_llegits);
-            comprovarError(TCP_Envia(scon, buffer, bytes_llegits));
+            comprovarError(TCP_Envia(scon, buffer, bytes_llegits), "TCP_Envia");
         }
-        comprovarError(TCP_TancaSock(scon));
+        comprovarError(TCP_TancaSock(scon), "TCP_TancaSock");
+        scon = -1;
     }
     return 0;
 }
@@ -90,19 +105,31 @@ int obtPort(void){
     int port;
 
     printf("A quin port vols escoltar? :) \n");
-    scanf("%d", &port);
-
+    if (scanf("%d", &port) != 1){
+        printf("Port no valid\n");
+        exit(1);
+    }
     return port;
 }
 
-void comprovarError(int res){
+void comprovarError(int res, const char *crida){
     int codiError;
     char *error;
-    if(res == -1){
+    if (res == -1){
         error = T_ObteTextRes(&codiError);
-        printf("Hem obtingut el seguent error: %s \n", error);
-        printf("Amb el seguent codi: %d \n", codiError);
-
+        printf("Error a %s: %s (errno = %d)\n", crida, error, codiError);
         exit(1);
     }
+}
+
+void tancaSuaument(int senyal)
+{
+    const char msg[] = "\nCtrl+C rebut: tanco els sockets i acabo.\n";
+    ssize_t r;
+    (void)senyal;
+    r = write(1, msg, sizeof(msg) - 1);
+    (void)r;
+    if (scon != -1) TCP_TancaSock(scon);
+    if (sesc != -1) TCP_TancaSock(sesc);
+    _exit(0);
 }

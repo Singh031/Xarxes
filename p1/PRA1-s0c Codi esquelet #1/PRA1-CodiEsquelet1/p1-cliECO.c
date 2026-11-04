@@ -31,7 +31,7 @@
 /* int FuncioInterna(arg1, arg2...);                                      */
 void DemanaIpServidor(char *iprem);
 int DemanaPortServidor(void);
-void comprovarError(int res);
+void comprovarError(int res, const char *crida);
 
 int main(int argc,char *argv[])
 {
@@ -47,17 +47,18 @@ int main(int argc,char *argv[])
     DemanaIpServidor(iprem);
     portrem = DemanaPortServidor();
     sck = TCP_CreaSockClient("0.0.0.0", 0);
-    comprovarError(sck);
-    comprovarError(TCP_DemanaConnexio(sck, iprem, portrem));
-    comprovarError(TCP_TrobaAdrSockLoc(sck, iploc, &portloc));
-    comprovarError(TCP_TrobaAdrSockRem(sck, ipremMostrar, &portremMostrar));
+    comprovarError(sck, "TCP_CreaSockClient");
+    comprovarError(TCP_DemanaConnexio(sck, iprem, portrem), "TCP_DemanaConnexio");
+    comprovarError(TCP_TrobaAdrSockLoc(sck, iploc, &portloc), "TCP_TrobaAdrSockLoc");
+    comprovarError(TCP_TrobaAdrSockRem(sck, ipremMostrar, &portremMostrar), "TCP_TrobaAdrSockRem");
     printf("Socket local: %s : %d\n", iploc, portloc);
     printf("Socket remot: %s : %d\n", ipremMostrar, portremMostrar);
     while(1){
-        comprovarError(bytes_llegits = read(0, buffer, MAX_BUFFER-1));
+        comprovarError(bytes_llegits = read(0, buffer, MAX_BUFFER-1), "read");
+        if (bytes_llegits == 0) break;
         buffer[bytes_llegits] = '\0';
         if (!strcmp(LINIA_ESPECIAL, buffer)) break;
-        comprovarError(bytes_escrits = TCP_Envia(sck, buffer, bytes_llegits));
+        comprovarError(bytes_escrits = TCP_Envia(sck, buffer, bytes_llegits), "TCP_Envia");
         printf("Nombre de bytes enviats: %d\n", bytes_escrits);
         bytes_llegits = TCP_Rep(sck, buffer, MAX_BUFFER-1);
         if (!bytes_llegits)
@@ -65,13 +66,13 @@ int main(int argc,char *argv[])
             printf("La connexio amb el servidor s'ha tancat\n");
             break;
         }
-        comprovarError(bytes_llegits);
+        comprovarError(bytes_llegits, "TCP_Rep");
         buffer[bytes_llegits] = '\0';
         printf("%s", buffer);
     }
-    comprovarError(TCP_TancaSock(sck));
+    comprovarError(TCP_TancaSock(sck, "TCP_TancaSock"));
     printf("Vols continuar o acabar (C/F):");
-    scanf(" %c", &resposta);
+    if (scanf(" %c", &resposta) != 1) break;
     if (resposta == 'f' || resposta == 'F') break;
     }
 }
@@ -83,25 +84,26 @@ int main(int argc,char *argv[])
 void DemanaIpServidor(char *iprem)
 {
     printf("IP del servidor:");
-    scanf("%15s", iprem);
+    if (scanf("%15s", iprem) != 1) exit(0);
 }
 
 int DemanaPortServidor()
 {
     int port;
     printf("Port del servidor:");
-    scanf("%d", &port);
+    if (scanf("%d", &port) != 1){
+        printf("Port no valid\n");
+        exit(1);
+    }
     return port;
 }
 
-void comprovarError(int res){
+void comprovarError(int res, const char *crida){
     int codiError;
     char *error;
-    if(res == -1){
+    if (res == -1){
         error = T_ObteTextRes(&codiError);
-        printf("Hem obtingut el seguent error: %s \n", error);
-        printf("Amb el seguent codi: %d \n", codiError);
-
+        printf("Error a %s: %s (errno = %d)\n", crida, error, codiError);
         exit(1);
     }
 }
