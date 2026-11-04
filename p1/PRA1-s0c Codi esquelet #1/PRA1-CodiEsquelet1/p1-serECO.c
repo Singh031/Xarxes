@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <unistd.h>
 
 /* Definició de constants, p.e.,                                          */
 
@@ -44,8 +46,8 @@ int main(int argc,char *argv[])
     char buffer[MAX_BUFFER];
     char iploc[MAX_IP], iprem[MAX_IP];
     int portloc, portrem;
-    char iplocCon[MAX_IP];
-    int portlocCon;
+    char iplocCon[MAX_IP], iplocEsc[MAX_IP];
+    int portlocCon, portlocEsc;
 
     strcpy(iploc, "0.0.0.0"); // Escolto a local i remot
     if (argc > 1) {
